@@ -45,6 +45,8 @@ public class AlgPrim : MonoBehaviour
             Cells[x][y].tag = Clear;
             to_check.Remove(item: Cells[x][y]);
 
+
+            //conect
             List<string> dir = new List<string> { "North", "South", "East", "West" };
             while (dir.Count > 0)
             {
@@ -57,6 +59,7 @@ public class AlgPrim : MonoBehaviour
                         {
                             Cells[x][index: y - 1].tag = Clear;
                             dir.Clear();
+
                         }
                         break;
                     case "South":
@@ -83,22 +86,25 @@ public class AlgPrim : MonoBehaviour
                     default:
                         break;
                 }
+
                 if (dir.Count != 0)
                     dir.RemoveAt(dir_index);
             }
-            if (y - 2 >= 0 && Cells[x][y - 2].tag == Wall)
+
+            //добавить точки для посещения
+            if (y - 2 >= 0 && Cells[x][y - 2].tag == Wall && !to_check.Contains(Cells[x][y - 2]))
             {
                 to_check.Add(Cells[x][y - 2]);
             }
-            if (y + 2 < height && Cells[x][y + 2].tag == Wall)
+            if (y + 2 < height && Cells[x][y + 2].tag == Wall && !to_check.Contains(Cells[x][y + 2]))
             {
                 to_check.Add(Cells[x][y + 2]);
             }
-            if (x - 2 >= 0 && Cells[x - 2][y].tag == Wall)
+            if (x - 2 >= 0 && Cells[x - 2][y].tag == Wall && !to_check.Contains(Cells[x - 2][y]))
             {
                 to_check.Add(Cells[x - 2][y]);
             }
-            if (x + 2 < width && Cells[x + 2][y].tag == Wall)
+            if (x + 2 < width && Cells[x + 2][y].tag == Wall && !to_check.Contains(Cells[x + 2][y]))
             {
                 to_check.Add(Cells[x + 2][y]);
             }
