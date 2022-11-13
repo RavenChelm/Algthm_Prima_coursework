@@ -1,183 +1,135 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+
 public class AlgPrim : MonoBehaviour
 {
-    private List<GameObject> listCell = new List<GameObject>(); //Список всех ячеек
-    private List<GameObject> ListWallCell = new List<GameObject>(); //Список стен для алгоритма
-    private List<GameObject> ListMaze = new List<GameObject>(); //Отдельно лабиринт
-    [SerializeField] public GameObject Cell; // префаб ячйки 
+    public List<List<GameObject>> Cells = new List<List<GameObject>>();
+    private string Clear = "Clear";
+    private string Wall = "Wall";
 
-    void Start()
+    [ContextMenu("Generate Maze")]
+    private void GenerateMaze()
     {
-        //______Подготовка_____
+        //Подготовка
+        int width = Cells.Count;
+        int height = Cells[0].Count;
+        //Отчищение рандомной нечётной ячейки
+        int x = Random.Range(0, width / 2) * 2 + 1;
+        int y = Random.Range(0, height / 2) * 2 + 1;
+        Cells[x][y].tag = Clear;
 
-        int Number = 0; // счётчик
-        int targetCells = 20; //количестве ячеек на стороне 
-        int Index = 0; //Индекс полученный из имени
-        Transform trnform = transform;
-        //Генерация поля
-        for (int i = 0; i < targetCells; i++)
+        //Получение стартовых ячеек для проверки
+        List<GameObject> to_check = new List<GameObject>();
+        if (y - 2 >= 0)
         {
-            for (int n = 0; n < targetCells; n++)
-            {
-                var cell = Instantiate(Cell, trnform);
-                listCell.Add(cell);
-                cell.transform.name = cell.transform.name.Replace("Image(Clone)", Number.ToString());
-                cell.GetComponent<Cell>().x = n;
-                cell.GetComponent<Cell>().y = i;
-                cell.tag = "Empty";
-                Number++;
-            }
+            to_check.Add(Cells[x][y - 2]);
         }
-        //Поиск соседей
-        for (int i = 0; i < targetCells; i++)
+        if (y + 2 < height)
         {
-            for (int n = 0; n < targetCells; n++)
-            {
-                if (int.TryParse(listCell[Index].name, out Index))
-                {
-                    if (Index % targetCells == 0)
-                    {
-                        if (Index + 1 < targetCells * targetCells)
-                            listCell[Index].GetComponent<Cell>().neighbors.Add(listCell[Index + 1]);
-                    }
-                    else if ((Index + 1) % targetCells == 0)
-                    {
-                        if (Index - 1 >= 0)
-                            listCell[Index].GetComponent<Cell>().neighbors.Add(listCell[Index - 1]);
-
-                    }
-                    else
-                    {
-                        if (Index - 1 >= 0)
-                            listCell[Index].GetComponent<Cell>().neighbors.Add(listCell[Index - 1]);
-                        if (Index + 1 < targetCells * targetCells)
-                            listCell[Index].GetComponent<Cell>().neighbors.Add(listCell[Index + 1]);
-                    }
-                    if (Index + targetCells < targetCells * targetCells)
-                        listCell[Index].GetComponent<Cell>().neighbors.Add(listCell[Index + targetCells]);
-                    if (Index - targetCells >= 0)
-                        listCell[Index].GetComponent<Cell>().neighbors.Add(listCell[Index - targetCells]);
-                }
-                Index++;
-            }
+            to_check.Add(Cells[x][y + 2]);
+        }
+        if (x - 2 >= 0)
+        {
+            to_check.Add(Cells[x - 2][y]);
+        }
+        if (x + 2 < width)
+        {
+            to_check.Add(Cells[x + 2][y]);
         }
 
-        //_____Начало алгоритма_____
-
-        //Получение рандомной ячейки
-        int RandomCellIndex = Random.Range(0, listCell.Count - 1);
-        ListMaze.Add(listCell[RandomCellIndex]);
-        ListMaze[0].tag = "Maze";
-        foreach (var cl in listCell[RandomCellIndex].GetComponent<Cell>().neighbors)
+        while (to_check.Count > 0)
         {
-            if (int.TryParse(cl.name, out Index))
-            {
-                //North
-                if (Index - targetCells * 2 >= 0)
-                {
-                    ListWallCell.Add(listCell[Index - targetCells * 2]);
-                }
-                //South
-                if (Index + targetCells * 2 <= targetCells * targetCells)
-                {
-                    ListWallCell.Add(listCell[Index + targetCells * 2]);
-                }
-                //East
-                if (Index - 2 >= 0)
-                {
-                    ListWallCell.Add(listCell[Index - 2]);
-                }
-                //West
-                if (Index + 2 <= targetCells * targetCells)
-                {
-                    ListWallCell.Add(listCell[Index + 2]);
-                }
-            }
-            else
-                continue;
-        }
+            int index = Random.Range(0, to_check.Count - 1);
+            (x, y) = to_check[index].GetComponent<Cell>().getXY();
+            Cells[x][y].tag = Clear;
+            to_check.Remove(item: Cells[x][y]);
 
-        while (ListWallCell.Count != 0)
-        {
-
-            RandomCellIndex = Random.Range(0, ListWallCell.Count - 1);
-            ListMaze.Add(ListWallCell[RandomCellIndex]);
-            ListMaze[ListMaze.Count - 1].tag = "Maze";
-            int num = int.Parse(ListMaze[ListMaze.Count - 1].name);
-            ListWallCell.RemoveAt(RandomCellIndex);
-
-            List<int> dir = new List<int> { 0, 1, 2, 3 };
-            while (dir.Count != 0)
+            List<string> dir = new List<string> { "North", "South", "East", "West" };
+            while (dir.Count > 0)
             {
                 int dir_index = Random.Range(0, dir.Count - 1);
-                Debug.Log(dir.Count);
-                switch (dir_index)
+                string tmp = dir[dir_index];
+                switch (dir[dir_index])
                 {
-                    case 0: //Noth
-                        if (num - targetCells * 2 >= 0 && listCell[num - targetCells * 2].tag == "Maze")
+                    case "North":
+                        if (y - 2 >= 0 && Cells[x][y - 2].tag == Clear)
                         {
-                            listCell[num - targetCells].tag = "Maze";
-                            ListMaze.Add(listCell[num - targetCells]);
+                            Cells[x][index: y - 1].tag = Clear;
                             dir.Clear();
                         }
                         break;
-                    case 1: //South
-                        if (num + targetCells * 2 <= targetCells * targetCells && listCell[num + targetCells * 2].tag == "Maze")
+                    case "South":
+                        if (y + 2 < height && Cells[x][y + 2].tag == Clear)
                         {
-                            listCell[num + targetCells].tag = "Maze";
-                            ListMaze.Add(listCell[num + targetCells]);
+                            Cells[x][index: y + 1].tag = Clear;
                             dir.Clear();
                         }
                         break;
-                    case 2: //East
-                        if (num - 2 <= 0 && listCell[num - 2].tag == "Maze")
+                    case "East":
+                        if (x - 2 >= 0 && Cells[x - 2][index: y].tag == Clear)
                         {
-                            listCell[num - 1].tag = "Maze";
-                            ListMaze.Add(listCell[num - 1]);
+                            Cells[x - 1][index: y].tag = Clear;
                             dir.Clear();
                         }
                         break;
-                    case 3: //West
-                        if (num + 2 <= 0 && listCell[num + 2].tag == "Maze")
+                    case "West":
+                        if (x + 2 < width && Cells[x + 2][y].tag == Clear)
                         {
-                            listCell[num + 1].tag = "Maze";
-                            ListMaze.Add(listCell[num + 1]);
+                            Cells[x + 1][y].tag = Clear;
                             dir.Clear();
                         }
+                        break;
+                    default:
                         break;
                 }
-                // dir.Remove(dir_index);
-                dir.Clear();
-
+                if (dir.Count != 0)
+                    dir.RemoveAt(dir_index);
             }
-            //     int dir_index = Random.Range(0, dir.Count - 1);
-            //    
-
-            // }
-            // if (num - targetCells * 2 >= 0 && listCell[num - targetCells * 2].tag == "Empty")
-            //     ListWallCell.Add(listCell[num - targetCells * 2]);
-            // if (num + targetCells * 2 <= targetCells * targetCells && listCell[num + targetCells * 2].tag == "Empty")
-            //     ListWallCell.Add(listCell[num + targetCells * 2]);
-            // if (num - 2 <= 0 && listCell[num - 2].tag == "Empty")
-            //     ListWallCell.Add(listCell[num - 2]);
-            // if (num + 2 >= 0 && listCell[num + 2].tag == "Empty")
-            //     ListWallCell.Add(listCell[num + 2]);
+            if (y - 2 >= 0 && Cells[x][y - 2].tag == Wall)
+            {
+                to_check.Add(Cells[x][y - 2]);
+            }
+            if (y + 2 < height && Cells[x][y + 2].tag == Wall)
+            {
+                to_check.Add(Cells[x][y + 2]);
+            }
+            if (x - 2 >= 0 && Cells[x - 2][y].tag == Wall)
+            {
+                to_check.Add(Cells[x - 2][y]);
+            }
+            if (x + 2 < width && Cells[x + 2][y].tag == Wall)
+            {
+                to_check.Add(Cells[x + 2][y]);
+            }
         }
-        foreach (var maze in ListMaze)
+        //Отрисовка
+        foreach (var list in Cells)
         {
-            var q = maze.GetComponent<Image>();
-            q.color = new Vector4(255, 255, 255, 255);
+            foreach (var cell in list)
+            {
+                if (cell.tag == Clear)
+                    cell.GetComponent<SpriteRenderer>().color = new Vector4(255, 255, 255, 255);
+            }
         }
+    }
 
+
+
+
+    [ContextMenu("ClearList")]
+    private void ClearList()
+    {
+        Cells.Clear();
 
     }
 
-    // Update is called once per frame
-    void Update()
+    public void AddList(List<GameObject> tmp)
     {
+        Cells.Add(tmp);
+        // Debug.Log(Cells.Count);
+        // Debug.Log(Cells[0].Count);
+        // Debug.Log(Cells[0][1]);
 
     }
 }
