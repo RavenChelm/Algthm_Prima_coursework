@@ -120,16 +120,109 @@ public class AlgPrim : MonoBehaviour
         }
     }
 
+    [ContextMenu(itemName: "Clear DeadEnd")]
+    private void Clear_DeadEnd()
+    {
+        //TODO вынести в параметр число удалений
+        int delEnd = 1;
+        int height = Cells.Count;
+        int width = Cells[0].Count;
+        for (int i = 0; i < delEnd; i++)
+        {
+            List<GameObject> DeadEnd = new List<GameObject>();
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    int neighbors = 0;
+                    if (x - 1 >= 0 && Cells[x - 1][y].tag == Clear)
+                        neighbors++;
+                    if (x + 1 < height && Cells[x + 1][y].tag == Clear)
+                        neighbors++;
+                    if (y - 1 >= 0 && Cells[x][y - 1].tag == Clear)
+                        neighbors++;
+                    if (y + 1 < width && Cells[x][y + 1].tag == Clear)
+                        neighbors++;
+                    if (neighbors <= 1)
+                        DeadEnd.Add(Cells[x][y]);
+                }
+            }
+            foreach (var cell in DeadEnd)
+            {
+                cell.tag = Wall;
+                cell.GetComponent<SpriteRenderer>().color = new Vector4(0, 0, 0, 255);
+            }
+        }
+    }
 
-
-
-    [ContextMenu("ClearList")]
-    private void ClearList()
+    [ContextMenu(itemName: "Growing Map")]
+    private void GrowingMap()
+    {
+        int GrowNum = 1;
+        int width = Cells.Count;
+        int height = Cells[0].Count;
+        List<GameObject> New_cell = new List<GameObject>();
+        for (int i = 0; i < GrowNum; i++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    if (Cells[x][y].tag == Wall)
+                    {
+                        int neighbors = 0;
+                        if (x + 1 < width && Cells[x + 1][y].tag == Clear)
+                            neighbors++;
+                        if (x + 1 < width && y + 1 < height && Cells[x + 1][y + 1].tag == Clear)
+                            neighbors++;
+                        if (y + 1 < height && Cells[x][y + 1].tag == Clear)
+                            neighbors++;
+                        if (x - 1 >= 0 && y + 1 < height && Cells[x - 1][y + 1].tag == Clear)
+                            neighbors++;
+                        if (x - 1 >= 0 && Cells[x - 1][y].tag == Clear)
+                            neighbors++;
+                        if (x - 1 >= 0 && y - 1 >= 0 && Cells[x - 1][y - 1].tag == Clear)
+                            neighbors++;
+                        if (y - 1 >= 0 && Cells[x][y - 1].tag == Clear)
+                            neighbors++;
+                        if (x + 1 < width && y - 1 >= 0 && Cells[x + 1][y - 1].tag == Clear)
+                            neighbors++;
+                        if (neighbors >= 4)
+                        {
+                            New_cell.Add(Cells[x][y]);
+                        }
+                    }
+                }
+            }
+        }
+        foreach (var cell in New_cell)
+        {
+            var CellClass = cell.GetComponent<Cell>();
+            (int x, int y) = CellClass.getXY();
+            Cells[x][y].tag = Clear;
+            cell.GetComponent<SpriteRenderer>().color = new Vector4(255, 255, 255, 255);
+        }
+    }
+    [ContextMenu("Clear List")]
+    public void ClearList()
     {
         Cells.Clear();
 
     }
+    public void ColorMaze()
+    {
+        foreach (var X in Cells)
+        {
+            foreach (var Y in X)
+            {
+                if (Y.tag == Clear)
+                    Y.GetComponent<SpriteRenderer>().color = new Vector4(255, 255, 255, 255);
+                else
+                    Y.GetComponent<SpriteRenderer>().color = new Vector4(0, 0, 0, 255);
 
+            }
+        }
+    }
     public void AddList(List<GameObject> tmp)
     {
         Cells.Add(tmp);
@@ -139,3 +232,4 @@ public class AlgPrim : MonoBehaviour
 
     }
 }
+

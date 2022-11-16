@@ -10,9 +10,12 @@ public class GridClass : MonoBehaviour
     [SerializeField] private int offset = 1;
 
     [ContextMenu("Generate Grid")]
-    private void GenerateGrid()
+    private void GenerateGrid(Vector2 Scale)
     {
+        wight = (int)Scale.x;
+        height = (int)Scale.y;
         AlgPrim alg = GetComponent<AlgPrim>();
+        alg.ClearList();
         Transform trn = transform;
         for (int x = 0; x < wight; x++)
         {
@@ -28,8 +31,8 @@ public class GridClass : MonoBehaviour
                 tmp.Add(cell);
             }
             alg.AddList(tmp);
-
         }
+
     }
     [ContextMenu("Delete Grid")]
     public void GridDelete()
@@ -38,4 +41,5 @@ public class GridClass : MonoBehaviour
         for (int j = trn.childCount; j > 0; --j)
             DestroyImmediate(trn.GetChild(0).gameObject);
     }
+
 }
