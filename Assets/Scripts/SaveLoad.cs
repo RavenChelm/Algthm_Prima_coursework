@@ -9,25 +9,36 @@ public static class SaveLoad
     public static List<Game> savedGames = new List<Game>();
     public static void Save()
     {
-        SaveLoad.savedGames.Clear();
         SaveLoad.savedGames.Add(Game.current);
         BinaryFormatter bf = new BinaryFormatter();
         //Application.persistentDataPath это строка; выведите ее в логах и вы увидите расположение файла сохранений
-        if (!File.Exists(Application.persistentDataPath + "/savedGames.txt"))
-        {
-            FileStream file = File.Create(Application.persistentDataPath + "/savedGames.txt");
-            bf.Serialize(file, SaveLoad.savedGames);
-            file.Close();
-        }
-        else
-        {
-            FileStream file = File.Open(Application.persistentDataPath + "/savedGames.txt", FileMode.Create, FileAccess.Write);
-            bf.Serialize(file, SaveLoad.savedGames);
-            file.Close();
-            Debug.Log(SaveLoad.savedGames.Count);
-        }
-
+        FileStream file = File.Create(Application.persistentDataPath + "/savedGames.txt");
+        bf.Serialize(file, SaveLoad.savedGames);
+        file.Close();
+        Debug.Log(Application.persistentDataPath + "/savedGames.txt");
     }
+
+    // public static void Save()
+    // {
+    //     SaveLoad.savedGames.Clear();
+    //     SaveLoad.savedGames.Add(Game.current);
+    //     BinaryFormatter bf = new BinaryFormatter();
+    //     //Application.persistentDataPath это строка; выведите ее в логах и вы увидите расположение файла сохранений
+    //     if (!File.Exists(Application.persistentDataPath + "/savedGames.txt"))
+    //     {
+    //         FileStream file = File.Create(Application.persistentDataPath + "/savedGames.txt");
+    //         bf.Serialize(file, SaveLoad.savedGames);
+    //         file.Close();
+    //     }
+    //     else
+    //     {
+    //         FileStream file = File.Open(Application.persistentDataPath + "/savedGames.txt", FileMode.Create, FileAccess.Write);
+    //         bf.Serialize(file, SaveLoad.savedGames);
+    //         file.Close();
+    //         Debug.Log(SaveLoad.savedGames.Count);
+    //     }
+
+    // }
     public static void Load()
     {
         if (File.Exists(Application.persistentDataPath + "/savedGames.txt"))
