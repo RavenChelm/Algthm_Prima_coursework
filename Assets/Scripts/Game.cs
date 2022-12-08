@@ -25,6 +25,8 @@ public class Game
     {
         current.width = Maze.Count;
         current.height = Maze[0].Count;
+        foreach (var insideList in current.SaveMaze)
+            insideList.Clear();
         current.SaveMaze.Clear();
         foreach (var X in Maze)
         {
